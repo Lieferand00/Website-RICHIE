@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@keyframes blob {
+  0% { transform: translate(-50%, 0) scale(1); }
+  33% { transform: translate(-48%, 12px) scale(1.06); }
+  66% { transform: translate(-52%, -6px) scale(0.98); }
+  100% { transform: translate(-50%, 0) scale(1); }
+}
+@keyframes blob2 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-16px, 10px) scale(1.05); }
+  66% { transform: translate(10px, -12px) scale(0.98); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes blob3 {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(14px, -10px) scale(1.04); }
+  66% { transform: translate(-10px, 12px) scale(0.99); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-blob { animation: blob 10s ease-in-out infinite; }
+.animate-blob2 { animation: blob2 12s ease-in-out infinite; }
+.animate-blob3 { animation: blob3 11s ease-in-out infinite; }
