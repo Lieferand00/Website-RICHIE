@@ -63,7 +63,7 @@ export default function Footer() {
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs leading-relaxed text-white/50">
               Keine medizinische Beratung. Inhalte zu PEDs/Peptiden dienen ausschließlich
-              Informationszwecken (Harm-Reduction) und ersetzen keine ärztliche Beratung.
+              Informationszwecken (Schadensminimierung) und ersetzen keine ärztliche Beratung.
             </div>
           </div>
         </div>

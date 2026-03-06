@@ -1,103 +1,87 @@
-// app/api/contact/route.ts
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-function isEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function escapeHtml(input: string) {
-  return input
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+const schema = z.object({
+  name: z.string().min(2, "Name zu kurz"),
+  email: z.string().email("Ungültige E-Mail"),
+  discord: z.string().optional(),
+  topic: z.string().min(2, "Thema zu kurz"),
+  message: z.string().min(3, "Nachricht zu kurz"),
+  "bot-field": z.string().optional(),
+});
 
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get("content-type") || "";
+    const raw = await req.text();
+
     if (!contentType.includes("application/x-www-form-urlencoded")) {
-      return NextResponse.json({ error: "Ungültige Anfrage." }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "Falscher Content-Type" }, { status: 415 });
     }
 
-    // ENV Checks (klarer Fehler, sonst nervig zu debuggen)
-    const TO = process.env.CONTACT_TO_EMAIL;
-    const FROM = process.env.CONTACT_FROM_EMAIL;
-    const RESEND_KEY = process.env.RESEND_API_KEY;
+    const params = new URLSearchParams(raw);
+    const data = Object.fromEntries(params.entries());
 
-    if (!RESEND_KEY || !TO || !FROM) {
+    const parsed = schema.safeParse(data);
+    if (!parsed.success) {
+      const first = parsed.error.issues?.[0]?.message ?? "Ungültige Eingaben";
+      return NextResponse.json({ ok: false, error: first }, { status: 400 });
+    }
+
+    // Honeypot
+    if (parsed.data["bot-field"]?.trim()) return NextResponse.json({ ok: true });
+
+    const to = process.env.CONTACT_TO_EMAIL;
+    const from = process.env.CONTACT_FROM_EMAIL;
+    const key = process.env.RESEND_API_KEY;
+
+    if (!to || !from || !key) {
       return NextResponse.json(
-        {
-          error:
-            "Server-Konfiguration fehlt. Bitte RESEND_API_KEY, CONTACT_TO_EMAIL und CONTACT_FROM_EMAIL setzen.",
-        },
+        { ok: false, error: "Server ENV fehlt (CONTACT_TO_EMAIL/CONTACT_FROM_EMAIL/RESEND_API_KEY)" },
         { status: 500 }
       );
     }
 
-    const raw = await req.text();
-    const data = new URLSearchParams(raw);
+    const resend = new Resend(key);
+    const { name, email, discord, topic, message } = parsed.data;
 
-    // Honeypot
-    const bot = (data.get("bot-field") || "").trim();
-    if (bot) {
-      // Spam: tu so als wäre alles ok
-      return NextResponse.json({ ok: true }, { status: 200 });
-    }
-
-    const name = (data.get("name") || "").trim();
-    const email = (data.get("email") || "").trim();
-    const handle = (data.get("handle") || "").trim();
-    const topic = (data.get("topic") || "").trim();
-    const message = (data.get("message") || "").trim();
-
-    if (!name || !email || !topic || !message) {
-      return NextResponse.json({ error: "Bitte fülle alle Pflichtfelder aus." }, { status: 400 });
-    }
-
-    if (!isEmail(email)) {
-      return NextResponse.json({ error: "Bitte gib eine gültige E-Mail an." }, { status: 400 });
-    }
-
-    if (message.length < 10) {
-      return NextResponse.json({ error: "Die Nachricht ist zu kurz." }, { status: 400 });
-    }
-
-    // HTML sicher bauen
-    const safeName = escapeHtml(name);
-    const safeEmail = escapeHtml(email);
-    const safeHandle = escapeHtml(handle);
-    const safeTopic = escapeHtml(topic);
-    const safeMessage = escapeHtml(message).replaceAll("\n", "<br/>");
-
-    await resend.emails.send({
-      from: FROM,
-      to: TO,          // ✅ feste Zieladresse
-      replyTo: email,  // ✅ Antworten gehen an den Absender
+    const result = await resend.emails.send({
+      from,
+      to, // feste Zieladresse
+      replyTo: email,
       subject: `Neue Anfrage: ${topic} — ${name}`,
-      html: `
-        <div style="font-family: ui-sans-serif, system-ui, -apple-system; line-height: 1.5;">
-          <h2 style="margin:0 0 12px;">Neue Kontaktanfrage</h2>
-          <p style="margin:0 0 6px;"><strong>Name:</strong> ${safeName}</p>
-          <p style="margin:0 0 6px;"><strong>E-Mail:</strong> ${safeEmail}</p>
-          ${safeHandle ? `<p style="margin:0 0 6px;"><strong>Handle:</strong> ${safeHandle}</p>` : ""}
-          <p style="margin:0 0 12px;"><strong>Thema:</strong> ${safeTopic}</p>
-          <hr style="border:none;border-top:1px solid #eee;margin:12px 0;" />
-          <p style="margin:0;">${safeMessage}</p>
-        </div>
-      `,
+      text: [
+        `Name: ${name}`,
+        `E-Mail: ${email}`,
+        `Discord: ${discord?.trim() ? discord.trim() : "-"}`,
+        `Thema: ${topic}`,
+        "",
+        "Nachricht:",
+        message,
+      ].join("\n"),
     });
 
-    return NextResponse.json({ ok: true }, { status: 200 });
-  } catch (err) {
-    console.error("CONTACT_ROUTE_ERROR:", err);
-    return NextResponse.json(
-      { error: "Serverfehler. Bitte später erneut versuchen." },
-      { status: 500 }
-    );
-  }
+    if (result?.error) {
+      return NextResponse.json(
+        { ok: false, error: `Resend Fehler: ${result.error.message || "unknown"}` },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+ } catch (e: unknown) {
+  console.error("CONTACT_ROUTE_ERROR:", e);
+
+  const message =
+    e instanceof Error ? e.message : "unknown";
+
+  return NextResponse.json(
+    { ok: false, error: `Serverfehler: ${message}` },
+    { status: 500 }
+  );
+}
 }

@@ -92,7 +92,7 @@ export default function ContactForm() {
       </button>
 
       <p className="text-xs leading-relaxed text-white/55">
-        Antwort meist innerhalb von 24–48h. Keine medizinische Beratung (nur Information / Harm-Reduction).
+        Antwort meist innerhalb von 24–48h. Keine medizinische Beratung (nur Information / Schadensminimierung).
       </p>
     </form>
   );

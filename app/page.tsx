@@ -27,7 +27,7 @@ const offerCards = [
     price: "70€ / Monat",
     desc: "Vollbetreuung mit Plan, Feedback & Umsetzung – angepasst an deinen Alltag.",
     bullets: [
-      "Individuelle PED/Peptide Info (Harm-Reduction)",
+      "Individuelle PED/Peptide Info (Schadensminimierung)",
       "Protokolle, Ernährungs- & Trainingspläne",
       "Supplement-Stacks / Beratung",
       "Ausführungskorrekturen & Feedback",
@@ -112,12 +112,12 @@ export default function HomePage() {
             </div>
 
             <h1 className="mt-6 text-4xl font-extrabold tracking-tight md:text-6xl">
-              Klarheit, die du{" "}
+              Vom Plan, zur{" "}
               <span className="relative inline-block">
-                <span className="relative z-10">spürst</span>
+                <span className="relative z-10">Bestform</span>
                 <span className="absolute -bottom-1 left-0 right-0 h-3 -skew-x-6 bg-white/10" />
               </span>{" "}
-              — und die bleibt.
+              — Worauf wartest du?
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-white/70 md:text-lg">
@@ -143,8 +143,8 @@ export default function HomePage() {
             </div>
 
             <div className="mt-10 grid max-w-xl grid-cols-1 gap-3 sm:grid-cols-3">
-              <StatChip k="24–48h" v="Antwortzeit" />
-              <StatChip k="3–6" v="Sessions typisch" />
+              <StatChip k=">24h" v="Antwortzeit" />
+              <StatChip k="3–6" v="Monate Arbeit" />
               <StatChip k="100%" v="vertraulich" />
             </div>
           </div>
@@ -328,7 +328,7 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 rounded-3xl border border-white/10 bg-black/30 p-5 text-xs font-semibold text-white/65">
-          Disclaimer: Keine medizinische Beratung. Inhalte zu PEDs/Peptiden dienen nur Informationszwecken und Harm-Reduction
+          Disclaimer: Keine medizinische Beratung. Inhalte zu PEDs/Peptiden dienen nur Informationszwecken und Schadensminimierung
           und ersetzen nicht Ärzt:innen.
         </div>
       </section>

@@ -64,7 +64,7 @@ export default function ContactPage() {
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <Stat icon={Clock} k="Antwort" v="24–48h" />
+              <Stat icon={Clock} k="Antwort" v=">24h" />
               <Stat icon={MessageSquare} k="Format" v="kurz & klar" />
               <Stat icon={Sparkles} k="Ziel" v="Next Steps" />
               <Stat icon={ArrowDown} k="Dauer" v="~ 2 Minuten" />
@@ -134,7 +134,7 @@ export default function ContactPage() {
             </div>
 
             <div className="mt-6 rounded-3xl border border-white/10 bg-black/30 p-5 text-xs font-semibold text-white/60">
-              Hinweis: Keine medizinische Beratung. Inhalte zu PEDs/Peptiden dienen nur Informationszwecken (Harm-Reduction)
+              Hinweis: Keine medizinische Beratung. Inhalte zu PEDs/Peptiden dienen nur Informationszwecken (Schadensminimierung)
               und ersetzen nicht Ärzt:innen.
             </div>
           </div>
